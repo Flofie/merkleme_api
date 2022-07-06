@@ -4,7 +4,8 @@
   "description": "Merkle Me Backend API",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
   "repository": {
     "type": "git",
@@ -28,5 +29,8 @@
     "merkletreejs": "^0.2.30",
     "nodemailer": "^6.7.2",
     "to-hex": "0.0.17"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.19"
   }
 }
