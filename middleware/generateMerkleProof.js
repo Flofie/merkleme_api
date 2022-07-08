@@ -6,7 +6,7 @@ const axios = require('axios');
 const express = require('express');
 const router = express.Router();
 
-const runProof = async (ipfsURIWhitelist, leafToVerify) => {
+const runProof = async (ipfsURIWhitelist, leafToVerify, wlType) => {
   let tree;
   let leaf;
   let leafIndex;
@@ -98,20 +98,38 @@ const runProof = async (ipfsURIWhitelist, leafToVerify) => {
     }
   };
 
-  if (await fetchWhitelistFromIPFS(ipfsURIWhitelist)) {
-    await generateMerkleTree(whitelistDataResponse, leafToVerify);
+  const oglist = process.env.OG_LIST.split(',');
+  console.log('og length', oglist.length);
+  const whitelist = process.env.WHITELIST.split(',');
+  console.log('whitelist length', whitelist.length);
+
+  if ((wlType === 1 && !oglist) || (wlType === 2 && !whitelist)) {
+    if (await fetchWhitelistFromIPFS(ipfsURIWhitelist)) {
+      await generateMerkleTree(whitelistDataResponse, leafToVerify);
+      // pass in a leaf value to generate a proof
+      getLeafHashFromTreeSummary(leaf);
+      return getProof();
+    } else {
+      console.log(`Error: IPFS URI Invalid`);
+    }
+  } else {
+    console.log('use oglist/whitelist from env');
+    await generateMerkleTree(wlType === 1 ? oglist : whitelist, leafToVerify);
     // pass in a leaf value to generate a proof
     getLeafHashFromTreeSummary(leaf);
     return getProof();
-  } else {
-    console.log(`Error: IPFS URI Invalid`);
   }
+
   return { errorMsg: 'Error: IPFS whitelist link is invalid' };
 };
 
 router.post('/proof', async (req, res) => {
   console.log(req.body);
-  const result = await runProof(req.body.whitelist, req.body.leafToVerify);
+  const result = await runProof(
+    req.body.whitelist,
+    req.body.leafToVerify,
+    req.body.wlType
+  );
   if (result.errorMsg) {
     res.status(500).json(result);
   } else {
