@@ -98,12 +98,27 @@ const runProof = async (ipfsURIWhitelist, leafToVerify, wlType) => {
     }
   };
 
-  const oglist = process.env.OG_LIST.split(',');
-  console.log('og length', oglist.length);
-  const whitelist = process.env.WHITELIST.split(',');
-  console.log('whitelist length', whitelist.length);
+  let shadowList;
+  let oglist;
+  let whitelist;
+  if (process.env.SHADOW_LIST) {
+    shadowList = process.env.SHADOW_LIST.split(',');
+    console.log('shadowList length', shadowList.length);
+  }
+  if (process.env.OG_LIST) {
+    oglist = process.env.OG_LIST.split(',');
+    console.log('ogList length', oglist.length);
+  }
+  if (process.env.WHITELIST) {
+    whitelist = process.env.WHITELIST.split(',');
+    console.log('whitelist length', whitelist.length);
+  }
 
-  if ((wlType === 1 && !oglist) || (wlType === 2 && !whitelist)) {
+  if (
+    (wlType === 1 && !shadowList) ||
+    (wlType === 2 && !oglist) ||
+    (wlType === 3 && !whitelist)
+  ) {
     if (await fetchWhitelistFromIPFS(ipfsURIWhitelist)) {
       await generateMerkleTree(whitelistDataResponse, leafToVerify);
       // pass in a leaf value to generate a proof
@@ -114,7 +129,10 @@ const runProof = async (ipfsURIWhitelist, leafToVerify, wlType) => {
     }
   } else {
     console.log('use oglist/whitelist from env');
-    await generateMerkleTree(wlType === 1 ? oglist : whitelist, leafToVerify);
+    await generateMerkleTree(
+      wlType === 1 ? shadowList : wlType === 2 ? oglist : whitelist,
+      leafToVerify
+    );
     // pass in a leaf value to generate a proof
     getLeafHashFromTreeSummary(leaf);
     return getProof();
