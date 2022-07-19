@@ -101,6 +101,8 @@ const runProof = async (ipfsURIWhitelist, leafToVerify, wlType) => {
   let shadowList;
   let oglist;
   let whitelist;
+  let degenList;
+
   if (process.env.SHADOW_LIST) {
     shadowList = process.env.SHADOW_LIST.split(',');
     console.log('shadowList length', shadowList.length);
@@ -109,15 +111,20 @@ const runProof = async (ipfsURIWhitelist, leafToVerify, wlType) => {
     oglist = process.env.OG_LIST.split(',');
     console.log('ogList length', oglist.length);
   }
-  if (process.env.WHITELIST) {
-    whitelist = process.env.WHITELIST.split(',');
-    console.log('whitelist length', whitelist.length);
+  if (process.env.WHITE_LIST) {
+    whitelist = process.env.WHITE_LIST.split(',');
+    console.log('whiteList length', whitelist.length);
+  }
+  if (process.env.DEGEN_LIST) {
+    degenList = process.env.DEGEN_LIST.split(',');
+    console.log('degenList length', degenList.length);
   }
 
   if (
     (wlType === 1 && !shadowList) ||
     (wlType === 2 && !oglist) ||
-    (wlType === 3 && !whitelist)
+    (wlType === 3 && !whitelist) ||
+    (wlType === 4 && !degenList)
   ) {
     if (await fetchWhitelistFromIPFS(ipfsURIWhitelist)) {
       await generateMerkleTree(whitelistDataResponse, leafToVerify);
@@ -129,10 +136,23 @@ const runProof = async (ipfsURIWhitelist, leafToVerify, wlType) => {
     }
   } else {
     console.log('use oglist/whitelist from env');
-    await generateMerkleTree(
-      wlType === 1 ? shadowList : wlType === 2 ? oglist : whitelist,
-      leafToVerify
-    );
+    switch (wlType) {
+      case 1:
+        await generateMerkleTree(shadowList, leafToVerify);
+        break;
+      case 2:
+        await generateMerkleTree(oglist, leafToVerify);
+        break;
+      case 3:
+        await generateMerkleTree(whitelist, leafToVerify);
+        break;
+      case 4:
+        await generateMerkleTree(degenList, leafToVerify);
+        break;
+      default:
+        console.error('invalid wl type', wlType);
+    }
+
     // pass in a leaf value to generate a proof
     getLeafHashFromTreeSummary(leaf);
     return getProof();
