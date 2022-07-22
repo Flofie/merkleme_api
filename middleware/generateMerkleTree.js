@@ -78,12 +78,14 @@ const generate = async ({ userEmail, collectionName, data }) => {
     // Publish White List
     const pinResponseWhitelist = await pinata.pinJSONToIPFS(data, pinOptions);
     const ipfsURIWhitelist =
-      'https://gateway.pinata.cloud/ipfs/' + pinResponseWhitelist.IpfsHash;
+      'https://degensweepers.mypinata.cloud/ipfs/' +
+      pinResponseWhitelist.IpfsHash;
 
     // Publish Merkle Root
     const pinResponseRootHash = await pinata.pinJSONToIPFS(rootObj, pinOptions);
     const ipfsURIRootHash =
-      'https://gateway.pinata.cloud/ipfs/' + pinResponseRootHash.IpfsHash;
+      'https://degensweepers.mypinata.cloud/ipfs/' +
+      pinResponseRootHash.IpfsHash;
 
     // Publish Merkle Tree Summary
     // to show a mapping of each leaf value to its corresponding hash
@@ -92,7 +94,8 @@ const generate = async ({ userEmail, collectionName, data }) => {
       pinOptions
     );
     const ipfsURITreeSummary =
-      'https://gateway.pinata.cloud/ipfs/' + pinResponseTreeSummary.IpfsHash;
+      'https://degensweepers.mypinata.cloud/ipfs/' +
+      pinResponseTreeSummary.IpfsHash;
 
     return {
       whitelist: `${ipfsURIWhitelist}`,
